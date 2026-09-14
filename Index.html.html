@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hami｜中秋LINE文案日曆</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --milk:#F6F1E7;
+    --milk-deep:#EFE6D6;
+    --tea:#B98D5E;
+    --tea-deep:#8C6A45;
+    --pink-grey:#DCC8C3;
+    --ink:#3B342C;
+    --ink-soft:#8A7C6C;
+    --line:#E4D8C7;
+    --white:#FFFDF9;
+    --done:#C7B49A;
+    --warn:#A85A3E;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--milk);
+    font-family:'Noto Sans TC', sans-serif;
+    color:var(--ink);
+    padding:0 0 60px;
+  }
+  header{
+    padding:32px 20px 20px;
+    text-align:left;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, var(--milk-deep), var(--milk));
+  }
+  header .eyebrow{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  header h1{
+    font-family:'Noto Serif TC', serif;
+    font-size:25px;
+    margin:0 0 8px;
+    font-weight:700;
+    color:var(--tea-deep);
+  }
+  header p{
+    margin:0;
+    font-size:14px;
+    color:var(--ink-soft);
+    line-height:1.75;
+  }
+  .tabs{
+    display:flex;
+    gap:8px;
+    padding:16px 16px 0;
+  }
+  .tab{
+    flex:1;
+    text-align:center;
+    padding:11px 8px;
+    border-radius:12px;
+    font-size:14px;
+    font-weight:500;
+    background:var(--white);
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .tab.active{
+    background:var(--tea);
+    color:var(--white);
+    border-color:var(--tea);
+  }
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+
+  .progress-wrap{ padding:18px 20px 4px; }
+  .progress-label{
+    display:flex; justify-content:space-between;
+    font-size:13px; color:var(--ink-soft); margin-bottom:8px;
+  }
+  .progress-bar{ height:8px; border-radius:999px; background:var(--milk-deep); overflow:hidden; }
+  .progress-fill{ height:100%; background:linear-gradient(90deg, var(--tea), var(--pink-grey)); width:0%; transition:width .4s ease; }
+
+  .list{ padding:6px 16px 0; display:flex; flex-direction:column; gap:14px; }
+  .card{ background:var(--white); border:1px solid var(--line); border-radius:16px; overflow:hidden; transition:opacity .3s ease; }
+  .card.done{ opacity:0.55; }
+  .card-head{ display:flex; align-items:center; gap:12px; padding:16px 16px 14px; cursor:pointer; }
+  .date-badge{
+    flex-shrink:0; width:54px; height:54px; border-radius:14px;
+    background:var(--milk-deep); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; font-family:'Noto Serif TC', serif;
+  }
+  .date-badge .d{ font-size:17px; font-weight:700; color:var(--tea-deep); line-height:1; }
+  .date-badge .w{ font-size:11px; color:var(--ink-soft); margin-top:2px; }
+  .card.done .date-badge{ background:var(--done); }
+  .card.done .date-badge .d, .card.done .date-badge .w{ color:var(--white); }
+  .head-text{ flex:1; min-width:0; }
+  .phase-tag{
+    display:inline-block; font-size:11px; color:var(--tea-deep);
+    background:rgba(185,141,94,0.12); padding:2px 9px; border-radius:999px; margin-bottom:5px;
+  }
+  .card.launch .phase-tag{ background:rgba(220,120,90,0.15); color:#B0552F; }
+  .title{ font-size:15px; font-weight:700; color:var(--ink); }
+  .chevron{ flex-shrink:0; width:20px; height:20px; color:var(--ink-soft); transition:transform .25s ease; }
+  .card.open .chevron{ transform:rotate(180deg); }
+  .card-body{ max-height:0; overflow:hidden; transition:max-height .35s ease; }
+  .card.open .card-body{ max-height:1000px; }
+  .body-inner{ padding:0 16px 18px; }
+  .copy-box{
+    background:var(--milk); border:1px solid var(--line); border-radius:12px;
+    padding:14px 16px; font-size:14px; line-height:1.85; white-space:pre-wrap; color:var(--ink);
+  }
+  .note{
+    margin-top:10px; font-size:12.5px; color:var(--warn);
+    background:rgba(220,120,90,0.08); border-radius:10px; padding:8px 12px; line-height:1.6;
+  }
+  .actions{ display:flex; gap:8px; margin-top:12px; }
+  button{
+    font-family:inherit; font-size:13.5px; border-radius:999px; padding:9px 16px;
+    border:none; cursor:pointer; display:flex; align-items:center; gap:6px;
+  }
+  .copy-btn{ background:var(--tea); color:var(--white); flex:1; justify-content:center; font-weight:500; }
+  .copy-btn.copied{ background:#7C9473; }
+  .done-btn{ background:transparent; color:var(--ink-soft); border:1px solid var(--line); }
+  .card.done .done-btn{ color:var(--tea-deep); border-color:var(--tea); }
+
+  .kb-banner{
+    margin:16px 16px 0; padding:14px 16px; border-radius:14px;
+    background:rgba(220,120,90,0.10); border:1px solid rgba(220,120,90,0.25);
+    font-size:13px; color:var(--warn); line-height:1.75;
+  }
+  .kb-list{ padding:14px 16px 0; display:flex; flex-direction:column; gap:12px; }
+  .kb-card{ background:var(--white); border:1px solid var(--line); border-radius:16px; padding:16px 18px; }
+  .kb-name{ font-family:'Noto Serif TC', serif; font-weight:700; font-size:16px; color:var(--tea-deep); margin-bottom:8px; }
+  .kb-row{ font-size:13.5px; line-height:1.8; margin-bottom:4px; }
+  .kb-row b{ color:var(--ink); font-weight:500; }
+  .kb-quote{
+    margin-top:8px; font-size:13px; background:var(--milk); border-radius:10px;
+    padding:10px 12px; line-height:1.75; color:var(--ink);
+  }
+
+  footer{ padding:26px 24px 10px; font-size:12.5px; color:var(--ink-soft); line-height:1.8; text-align:center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">婕樂纖官方LINE · 內容排程</div>
+  <h1>中秋纖體美肌組合｜文案日曆</h1>
+  <p>9/15 開始鋪陳，9/17 雙組合正式開賣，活動一路到 10/5。<br>每天打開看今天要發什麼，改一下再貼就好。</p>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="calendar">21天文案日曆</div>
+  <div class="tab" data-tab="kb">產品知識卡</div>
+</div>
+
+<div class="panel active" id="panel-calendar">
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>發送進度</span>
+      <span id="progressText">0 / 21</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+  <div class="list" id="list"></div>
+</div>
+
+<div class="panel" id="panel-kb">
+  <div class="kb-banner">
+    ⚠️ 這裡是妳自己參考用的成分/認證資料，不是要直接貼給客人的廣告詞。<br>
+    除了纖飄錠有衛福部核可的健字號（可照官方文字引用），其餘產品依法都不能宣傳具體效果，只能講成分、來源、認證，不要自己加「有效」「一定會瘦」「消除」這類字。
+  </div>
+  <div class="kb-list" id="kbList"></div>
+</div>
+
+<footer>
+  按「今天發過了」會打勾並淡化，方便妳知道進度到哪。<br>
+  進度只存在這個頁面當下的畫面，重新整理會歸零。標 ⚠️ 的那幾則發之前務必看一下提醒。
+</footer>
+
+<script>
+const days = [
+  { date:"9/15", weekday:"二", phase:"觀念鋪陳", launch:false, title:"中秋容易變胖的3個原因",
+    text:`中秋節快到了
+
+老實說
+每年中秋後
+我身邊十個朋友
+有八個都在說同一句話
+
+「怎麼又胖了」
+
+其實不是妳意志力不夠
+是這3個原因
+
+烤肉的油脂加醬料
+熱量比妳想的高很多
+
+月餅一顆
+糖分抵過一餐
+
+聚餐多、作息亂
+身體代謝也會跟著亂
+
+先知道原因
+才知道怎麼應對
+
+這幾天我會分享一些
+我自己在用的小方法
+
+留言跟我說
+妳是不是也中了😂`
+  },
+  { date:"9/16", weekday:"三", phase:"個人故事＋預告", launch:false, title:"我以前也是這樣過中秋",
+    text:`每年中秋前
+我都會提早幫自己打底
+
+以前完全沒概念
+過完節整個人腫一圈
+心情也跟著差
+
+後來我開始
+在節日前先調整飲食習慣
+搭配一些簡單的日常選擇
+讓身體先準備好
+而不是等胖了再收拾
+
+明天
+我要跟大家宣布一件事
+
+這次中秋
+我準備了兩個組合
+把纖體跟養膚一起顧到
+
+想先偷看的
+明天準時來看`
+  },
+  { date:"9/17", weekday:"四", phase:"正式開賣", launch:true, title:"雙組合正式開賣",
+    text:`中秋纖體美肌組合
+今天正式開賣🥮
+
+這次準備了兩個組合
+
+❶ 美肌組合
+水光錠2＋水光面膜1
+送 小白瓶身體油1
+
+❷ 纖體組合
+纖纖飲2＋纖飄錠1
+送 纖酵宿1
+
+活動一路到10/5
+
+不管妳是想顧肌膚
+還是想幫自己中秋前後做準備
+都幫妳準備好了
+
+想了解怎麼選
+直接私訊我`,
+    note:"⚠️ 記得補上妳最新確認的價格，發之前再檢查一次數字有沒有更新。"
+  },
+  { date:"9/18", weekday:"五", phase:"美肌組合知識", launch:false, title:"水光錠＋水光面膜是什麼",
+    text:`昨天很多人問
+美肌組合裡面的水光錠跟水光面膜到底是什麼
+
+跟大家分享一下
+
+水光錠
+主要成分是日本專利的Hyabest玻尿酸
+搭配賽洛美、藻紅素、膠原蛋白胜肽跟黃杞葉
+這幾個都是日本進口的專利原料
+
+水光繃帶面膜
+用的是法國百年的繃帶普拉斯成分
+搭配7種玻尿酸還有尿囊素
+有SGS檢驗，也有皮膚科醫生評鑑
+
+單純跟大家分享成分知識
+每個人膚況不同
+使用前建議先了解自己的膚質`,
+    note:"⚠️ 只講成分與認證，不要加「美白」「消除細紋」「效果顯著」這類字，保養品依法不得宣傳效果。"
+  },
+  { date:"9/19", weekday:"六", phase:"纖體組合知識", launch:false, title:"纖纖飲＋纖飄錠是什麼",
+    text:`纖體組合的纖纖飲跟纖飄錠
+也跟大家分享一下
+
+纖纖飲
+含有日本專利山葵葉萃取物Wasaslim
+搭配專利益生菌、栗子種皮萃取物
+官方稱有35項國際專利成分組成
+
+纖飄錠
+主要成分是兒茶素、荷葉萃取物、左旋肉鹼
+這款有拿到衛福部核可的健字號A00394
+官方核准的保健功效描述是
+
+「經動物實驗結果，有助於不易形成體脂肪
+在嚴謹的營養均衡與熱量控制
+以及適當的運動條件下
+適量攝取本產品有助於不易形成體脂肪」
+
+單純分享成分跟官方認證給大家參考`,
+    note:"⚠️ 健字號這段是官方核准的固定文字，只能照原文引用，不能自己加強語氣（例如改成「一定會瘦」「快速代謝」）。"
+  },
+  { date:"9/20", weekday:"日", phase:"互動", launch:false, title:"美肌派還是纖體派",
+    text:`中秋兩個組合
+妳是哪一派？
+
+💧 美肌組合派
+🌿 纖體組合派
+🤔 兩個都要派
+
+留言告訴我
+順便說說妳最在意的
+是肌膚還是身型`
+  },
+  { date:"9/21", weekday:"一", phase:"贈品驚喜", launch:false, title:"隱藏版贈品也很讚",
+    text:`今天來聊聊兩個組合裡的隱藏版驚喜
+
+美肌組合送的是
+小白瓶身體油
+成分是12種西班牙頂級植物油
+像向日葵籽油、酪梨油、堅果油
+質地清爽好吸收
+全身、頭髮都可以用
+
+纖體組合送的是
+纖酵宿
+裡面有超過110種蔬果酵素濃縮菁華
+是很多人拿來做日常飲食搭配的小幫手
+
+有時候贈品比主商品還讓人期待😂`
+  },
+  { date:"9/22", weekday:"二", phase:"日常心得", launch:false, title:"我自己最近的安排",
+    text:`分享一下我自己最近的日常安排
+
+早上起床先喝水
+再搭配纖體組合
+
+洗完臉之後
+會用水光面膜當作一週的加強保養
+其他天用一般保養程序
+
+單純是我自己的生活習慣
+不是要說這樣做就一定會怎樣
+每個人可以找到適合自己的節奏
+
+妳們平常的保養或飲食習慣
+會怎麼安排？留言跟我聊聊`,
+    note:"⚠️ 只描述「個人習慣」，不要寫成人人都會發生的效果。"
+  },
+  { date:"9/23", weekday:"三", phase:"提醒＋帶方案", launch:false, title:"聚餐前的小提醒",
+    text:`這幾天陸續要開始
+中秋聚餐、烤肉了吧
+
+分享一個小提醒
+
+聚餐前先吃一點東西
+不要空腹赴約
+比較不容易一次吃太多
+
+如果妳也想幫自己
+提早做一點準備
+纖體美肌組合都還在優惠中
+
+私訊我
+我幫妳看現在下單
+中秋前後都用得上`
+  },
+  { date:"9/24", weekday:"四", phase:"節前一天", launch:false, title:"明天就是中秋節",
+    text:`明天就是中秋節了🌕
+
+今晚不管是烤肉
+還是在家吃月餅
+都好好享受這個團圓的日子
+
+活動還在持續到10/5
+不用急著今天做決定
+但如果妳已經想好了
+私訊我隨時都可以幫妳安排
+
+祝大家明天中秋節愉快`
+  },
+  { date:"9/25", weekday:"五", phase:"中秋節當天", launch:false, title:"中秋節快樂",
+    text:`中秋節快樂🌕
+
+謝謝這段時間
+一路留言、跟我互動的妳們
+
+跟大家說一下
+纖體美肌組合活動
+會持續到10/5
+
+不是今天就結束
+大家可以放心過節
+之後有想法再私訊我都可以
+
+祝大家中秋節團圓愉快🥮`
+  },
+  { date:"9/26", weekday:"六", phase:"週末互動", launch:false, title:"中秋過得怎麼樣",
+    text:`中秋節過得怎麼樣？
+
+留言跟我說
+妳昨天吃了幾種月餅😂
+
+烤肉、月餅、聚餐都吃過一輪
+今天可以幫自己安排一個
+比較清爽的一餐
+
+明天想跟大家聊聊
+節後怎麼幫自己收心`
+  },
+  { date:"9/27", weekday:"日", phase:"客人心得", launch:false, title:"一位客人的分享",
+    text:`想跟大家分享
+一位客人這幾天跟我說的話
+
+「中秋前開始用美肌組合
+這幾天皮膚狀態自己感覺比較穩定
+出門也比較有自信」
+
+這是她自己的感受
+每個人狀況不同
+
+看到她這樣說
+我自己也覺得很開心
+
+如果妳也想在節後
+幫自己做點調整
+歡迎私訊我聊聊`,
+    note:"⚠️ 客人回饋要標明是「她自己的感受」，不要寫成大家用了都會這樣。"
+  },
+  { date:"9/28", weekday:"一", phase:"節後保養知識", launch:false, title:"節後肌膚小觀念",
+    text:`中秋連假結束
+上班第一天
+
+跟大家分享一個節後保養概念
+
+熬夜、聚餐後
+肌膚常常會比較乾燥、暗沉
+
+這時候基礎保濕就更重要
+可以搭配水光面膜
+一週加強個一兩次
+當作幫肌膚補水的小習慣
+
+單純分享保養觀念
+給剛結束連假的妳們`
+  },
+  { date:"9/29", weekday:"二", phase:"節後飲食知識", launch:false, title:"節後怎麼收心",
+    text:`連假後最容易出現的
+就是飲食習慣被打亂
+
+跟大家分享一個小觀念
+
+不用一次逼自己回到最嚴格的飲食
+先從恢復規律三餐開始
+再慢慢找回節奏
+
+這幾天如果想幫自己
+多一點營養補充
+纖體組合還在優惠中
+
+有需要的話
+可以私訊我聊聊怎麼安排`
+  },
+  { date:"9/30", weekday:"三", phase:"FAQ", launch:false, title:"大家常問的問題",
+    text:`這幾天收到不少私訊
+整理幾個大家常問的問題
+
+Q：兩個組合可以都買嗎
+A：可以，很多人是兩個一起入手
+
+Q：美肌組合送的小白瓶什麼時候能用
+A：收到就可以用，全身都能擦
+
+Q：纖體組合的纖酵宿怎麼吃
+A：官方建議餐前使用
+如果腸胃比較敏感
+可以改成餐後，或私訊我幫妳問客服
+
+活動到10/5
+還有問題都歡迎留言或私訊`
+  },
+  { date:"10/1", weekday:"四", phase:"倒數提醒", launch:false, title:"優惠剩5天",
+    text:`提醒大家
+中秋纖體美肌組合
+優惠只到10/5
+
+還沒決定的
+可以趁這幾天想清楚
+
+想單買、想兩個都買
+還是不確定怎麼選
+都可以直接私訊我
+我幫妳看最適合的方案`
+  },
+  { date:"10/2", weekday:"五", phase:"客人心得", launch:false, title:"另一位客人的分享",
+    text:`再跟大家分享一位客人的話
+
+「這次中秋前後開始用纖體組合
+自己感覺這次聚餐完
+沒有像以前那麼有負擔感」
+
+一樣是她自己的感受
+分享給大家參考
+
+如果妳這次中秋
+也吃得比較滿足
+想幫自己做點調整
+歡迎私訊我聊聊`,
+    note:"⚠️ 一樣要標明是客人自己的感受，不寫成保證性的效果。"
+  },
+  { date:"10/3", weekday:"六", phase:"互動＋倒數", launch:false, title:"倒數3天",
+    text:`優惠倒數3天了
+
+留言告訴我
+妳現在比較想選哪一個
+
+💧 美肌組合
+🌿 纖體組合
+🤔 兩個都想要
+
+想好的話
+直接私訊我
+幫妳安排起來`
+  },
+  { date:"10/4", weekday:"日", phase:"倒數1天", launch:true, title:"優惠倒數最後1天",
+    text:`中秋纖體美肌組合
+優惠倒數最後1天
+
+這段時間謝謝大家
+留言、私訊陪我聊了這麼多
+
+如果妳還在猶豫
+今天是最後機會
+
+私訊我
+我幫妳看看要怎麼安排最划算`
+  },
+  { date:"10/5", weekday:"一", phase:"最後一天", launch:true, title:"活動最後一天",
+    text:`今天是最後一天
+
+中秋纖體美肌組合
+晚上12點準時下架
+
+錯過這次
+就要等下一檔了
+
+還沒決定的
+現在私訊我
+我幫妳看還來不來得及
+
+謝謝這段時間
+一路陪我走過中秋的妳們`
+  }
+];
+
+const kb = [
+  { name:"水光錠（美肌組合）", type:"一般保健食品／無健字號",
+    rows:[
+      ["核心成分","日本Hyabest®專利玻尿酸、賽洛美、有機藻紅素、PO.OG膠原蛋白胜肽、黃杞葉"],
+      ["專利／認證","官方稱多國專利認證原料，多項世界品質標章"],
+      ["使用方式","官方建議一般保養每天兩次、早晚各一顆"]
+    ],
+    warn:"依法不得宣傳效果，只能講成分與來源，不能講「美白」「除皺」等具體效果詞。"
+  },
+  { name:"水光繃帶面膜（美肌組合）", type:"一般化妝品／無健字號",
+    rows:[
+      ["核心成分","繃帶普拉斯™（法國）、水光玻尿酸（7種複合）、尿囊素、維他命E、法國白夏菊萃取"],
+      ["認證","SGS檢驗合格、DBAA五位皮膚科醫生評鑑"],
+      ["使用方式","官方建議敷10-20分鐘後取下，輕拍吸收"]
+    ],
+    warn:"依法不得宣傳效果，只能講成分與檢驗認證，不能講「緊緻」「亮白」等具體效果詞。"
+  },
+  { name:"小白瓶身體油（美肌組合贈品）", type:"一般化妝品／無健字號",
+    rows:[
+      ["核心成分","12種西班牙頂級植物油（向日葵籽油、酪梨油、堅果油等）、北極紅球藻、紐西蘭桃柘羅漢松"],
+      ["特色","質地清爽好吸收，官方標示身體、頭髮、嘴唇皆可用"],
+      ["注意","僅乾性肌或雷射術後前7天可用於臉部，其餘膚質避免上臉"]
+    ],
+    warn:"依法不得宣傳效果，只能講成分與使用部位，不能講「修護」「回春」等具體效果詞。"
+  },
+  { name:"纖纖飲（纖體組合）", type:"一般保健食品／無健字號",
+    rows:[
+      ["核心成分","日本專利山葵葉萃取物Wasaslim™、專利益生菌ProbioAid® LM-1004、專利栗子種皮萃取物Chestmin®、專利磷脂醯膽鹼"],
+      ["專利","官方稱共35項國際專利成分組成"]
+    ],
+    warn:"依法不得宣傳具體效果，只能講成分、專利、來源，不能講「促進代謝」「燃脂」等效果詞。"
+  },
+  { name:"纖飄錠（纖體組合）", type:"健康食品／有衛福部健字號 A00394",
+    rows:[
+      ["核心成分","兒茶素（每4錠320-480毫克）、荷葉萃取物、左旋肉鹼"],
+      ["認證","衛福部健字號A00394、SNQ國家品質標章、世界品質標章金獎"],
+      ["使用方式","官方建議每次二錠，每日兩次"]
+    ],
+    quote:"官方核准保健功效描述（僅能照原文引用）：\n「經動物實驗結果，有助於不易形成體脂肪。在嚴謹的營養均衡與熱量控制，以及適當的運動條件下，適量攝取本產品有助於不易形成體脂肪」",
+    warn:"這是唯一有健字號、可引用官方效果文字的產品，但一定要照原文，不能加強語氣或省略「均衡飲食＋適當運動」的前提。"
+  },
+  { name:"纖酵宿（纖體組合贈品）", type:"一般保健食品／無健字號",
+    rows:[
+      ["核心成分","110種以上彩虹蔬果酵素濃縮菁華"],
+      ["使用方式","官方建議餐前使用，腸胃敏感者可改餐後"],
+      ["注意","孕婦不建議使用"]
+    ],
+    warn:"依法不得宣傳具體效果，建議講成「日常蔬果酵素補充」，不要直接寫「順暢」「排毒」這類生理效果詞。"
+  }
+];
+
+const list = document.getElementById('list');
+const progressText = document.getElementById('progressText');
+const progressFill = document.getElementById('progressFill');
+const state = days.map(()=>({open:false, done:false}));
+
+function render(){
+  list.innerHTML = '';
+  days.forEach((day, i)=>{
+    const s = state[i];
+    const card = document.createElement('div');
+    card.className = 'card' + (s.open ? ' open' : '') + (s.done ? ' done' : '') + (day.launch ? ' launch' : '');
+    card.innerHTML = `
+      <div class="card-head" data-idx="${i}">
+        <div class="date-badge">
+          <div class="d">${day.date}</div>
+          <div class="w">週${day.weekday}</div>
+        </div>
+        <div class="head-text">
+          <div class="phase-tag">${day.phase}</div>
+          <div class="title">${day.title}</div>
+        </div>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="card-body">
+        <div class="body-inner">
+          <div class="copy-box">${day.text}</div>
+          ${day.note ? `<div class="note">${day.note}</div>` : ''}
+          <div class="actions">
+            <button class="copy-btn" data-copy="${i}">複製文案</button>
+            <button class="done-btn" data-done="${i}">${s.done ? '已發送 ✓' : '今天發過了'}</button>
+          </div>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  list.querySelectorAll('.card-head').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = +el.dataset.idx;
+      state[idx].open = !state[idx].open;
+      render();
+    });
+  });
+
+  list.querySelectorAll('[data-copy]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const idx = +btn.dataset.copy;
+      navigator.clipboard.writeText(days[idx].text).then(()=>{
+        btn.textContent = '已複製 ✓';
+        btn.classList.add('copied');
+        setTimeout(()=>{ btn.textContent = '複製文案'; btn.classList.remove('copied'); }, 1600);
+      }).catch(()=>{ btn.textContent = '請手動選取複製'; });
+    });
+  });
+
+  list.querySelectorAll('[data-done]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const idx = +btn.dataset.done;
+      state[idx].done = !state[idx].done;
+      render();
+      updateProgress();
+    });
+  });
+
+  updateProgress();
+}
+
+function updateProgress(){
+  const doneCount = state.filter(s=>s.done).length;
+  progressText.textContent = `${doneCount} / ${days.length}`;
+  progressFill.style.width = (doneCount / days.length * 100) + '%';
+}
+
+function renderKb(){
+  const kbList = document.getElementById('kbList');
+  kbList.innerHTML = '';
+  kb.forEach(item=>{
+    const card = document.createElement('div');
+    card.className = 'kb-card';
+    let rowsHtml = item.rows.map(r=>`<div class="kb-row"><b>${r[0]}：</b>${r[1]}</div>`).join('');
+    let quoteHtml = item.quote ? `<div class="kb-quote">${item.quote.replace(/\n/g,'<br>')}</div>` : '';
+    card.innerHTML = `
+      <div class="kb-name">${item.name}</div>
+      <div class="kb-row"><b>類型：</b>${item.type}</div>
+      ${rowsHtml}
+      ${quoteHtml}
+      <div class="note">⚠️ ${item.warn}</div>
+    `;
+    kbList.appendChild(card);
+  });
+}
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+render();
+renderKb();
+</script>
+
+</body>
+</html>
